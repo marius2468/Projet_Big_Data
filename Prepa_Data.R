@@ -1,3 +1,5 @@
+library(xts)
+library(lubridate)
 data <- read.csv("stat_acc_V3.csv", sep = ";")
 
 # Enleve les cases vide
@@ -29,7 +31,7 @@ data$descr_type_col <- as.numeric(factor(data$descr_type_col))
 data$Num_Acc <- as.numeric(data$Num_Acc)
 data$num_veh <- as.character(data$num_veh)
 data$id_usa <- as.numeric(data$id_usa)
-data$date <- as.Date(data$date)
+data$date <- as.POSIXct(data$date, format = "%Y-%m-%d %H:%M:%S")
 data$ville <- as.character(data$ville)
 data$id_code_insee <- as.character(data$id_code_insee)
 data$latitude <- as.numeric(data$latitude)
