@@ -62,6 +62,6 @@ acf(accidents_par_mois_counts)
 accidents_par_semaine_counts <- table(format(data$date, "%Y-%U"))
 plot(accidents_par_semaine_counts, type = "l")
 acf(accidents_par_semaine_counts)
-
+ 
 
 
