@@ -59,3 +59,4 @@ plot(accidents_par_semaine_counts, type = "l")
 acf(accidents_par_semaine_counts)
 
 
+
