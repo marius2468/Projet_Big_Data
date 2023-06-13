@@ -51,10 +51,7 @@ data$place <- as.numeric(data$place)
 # Compter le nombre d'accidents par mois
 accidents_par_mois_counts <- table(format(data$date, "%Y-%m"))
 plot(accidents_par_mois_counts, type = "l")
-print(accidents_par_mois_counts)
 acf(accidents_par_mois_counts)
-
-print(length.POSIXlt(data))
 
 
 # Compter le nombre d'accidents par semaine
