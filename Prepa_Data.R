@@ -2,6 +2,8 @@ library(rlang)
 library(dplyr)
 library(xts)
 library(lubridate)
+library(stats)
+library(forecast)
 data <- read.csv("stat_acc_V3.csv", sep = ";")
 
 # Enleve les cases vide
@@ -37,7 +39,7 @@ data$descr_type_col <- as.numeric(factor(data$descr_type_col))
 data$Num_Acc <- as.numeric(data$Num_Acc)
 data$num_veh <- as.character(data$num_veh)
 data$id_usa <- as.numeric(data$id_usa)
-data$date <- as.POSIXct(data$date, format = "%Y-%m-%d %H:%M:%S")
+data$date <- as.Date(data$date)
 data$ville <- as.character(data$ville)
 data$id_code_insee <- as.character(data$id_code_insee)
 data$latitude <- as.numeric(data$latitude)
@@ -46,12 +48,18 @@ data$an_nais <- as.numeric(data$an_nais)
 data$age <- as.numeric(data$age)
 data$place <- as.numeric(data$place)
 
+# Compter le nombre d'accidents par mois
+accidents_par_mois_counts <- table(format(data$date, "%Y-%m"))
+plot(accidents_par_mois_counts, type = "l")
+print(accidents_par_mois_counts)
+acf(accidents_par_mois_counts)
 
-# Créez une série chronologique avec le nombre d'accidents par mois
-accidents_par_mois <- table(floor_date(data$date, "month"))
-accidents_par_mois <- xts(accidents_par_mois, order.by = as.Date(names(accidents_par_mois)))
+print(length.POSIXlt(data))
 
-# Créez une série chronologique avec le nombre d'accidents par semaine
-accidents_par_semaine <- table(floor_date(data$date, "week"))
-accidents_par_semaine <- xts(accidents_par_semaine, order.by = as.Date(names(accidents_par_semaine)))
+
+# Compter le nombre d'accidents par semaine
+accidents_par_semaine_counts <- table(format(data$date, "%Y-%U"))
+plot(accidents_par_semaine_counts, type = "l")
+acf(accidents_par_semaine_counts)
+
 
