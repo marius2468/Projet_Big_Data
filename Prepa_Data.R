@@ -1,3 +1,5 @@
+library(rlang)
+library(dplyr)
 library(xts)
 library(lubridate)
 data <- read.csv("stat_acc_V3.csv", sep = ";")
@@ -11,11 +13,16 @@ data <- subset(data, latitude >= -90 & latitude <= 90 & longitude >= -180 & long
 # Enleve les lignes comportant une case NULL
 data <- subset(data, !apply(data == 'NULL', 1, any))
 
-# Répertorie et numérise toutes les catégories de véhicules
+# Répertorie et numérise plusieurs catégories 
 data$descr_cat_veh <- as.numeric(factor(data$descr_cat_veh))
 
-# Répertorie et numérise plusieurs catégories 
-data$descr_grav <- as.numeric(factor(data$descr_grav))
+data <- data %>% mutate(descr_grav = case_when(
+    descr_grav == "Indemne" ~ 1,
+    descr_grav == "Blessé léger" ~ 2,
+    descr_grav == "Blessé hospitalisé" ~ 3,
+    descr_grav == "Tué" ~ 4
+  ))
+
 data$descr_agglo <- as.numeric(factor(data$descr_agglo))
 data$descr_athmo <- as.numeric(factor(data$descr_athmo))
 data$descr_lum <- as.numeric(factor(data$descr_lum))
