@@ -10,6 +10,26 @@ data <- read.csv("stat_acc_V3.csv", sep = ";")
 # Enleve les cases vide
 data <- na.omit(data) 
 
+# Charger les données des arrondissements de Paris, Marseille et Lyon
+arrondissements <- read.csv("donnees_arrondissements.csv", sep = ";")
+
+# Jointure des données des accidents avec les données des arrondissements
+data <- merge(data, arrondissements, by.x = "ville", by.y = "ville", all.x = TRUE)
+
+# Créer une liste des villes à rechercher
+villes <- c("PARIS", "MARSEILLE", "LYON")
+
+# Remplacer les latitudes et longitudes des accidents dans Paris, Marseille et Lyon
+for (ville in villes) {
+  pattern <- paste0("^", ville)  # Construire le motif de recherche
+  indices <- grepl(pattern, data$ville)  # Rechercher les indices correspondants
+  data$latitude[indices] <- data$latitude_arr[indices]  # Remplacer les latitudes
+  data$longitude[indices] <- data$longitude_arr[indices]  # Remplacer les longitudes
+}
+
+# Supprimer les colonnes supplémentaires des données des arrondissements
+data <- subset(data, select = -c(latitude_arr, longitude_arr))
+
 # Enleve les longitudes et latitude incohérentes
 data <- subset(data, latitude >= -90 & latitude <= 90 & longitude >= -180 & longitude <= 180) 
 
@@ -26,21 +46,98 @@ data <- data %>% mutate(descr_grav = case_when(
     descr_grav == "Tué" ~ 4
   ))
 
-data$descr_agglo <- as.numeric(factor(data$descr_agglo))
-data$descr_athmo <- as.numeric(factor(data$descr_athmo))
-data$descr_lum <- as.numeric(factor(data$descr_lum))
-data$descr_etat_surf <- as.numeric(factor(data$descr_etat_surf))
-data$description_intersection <- as.numeric(factor(data$description_intersection))
-data$descr_dispo_secu <- as.numeric(factor(data$descr_dispo_secu))
-data$descr_motif_traj <- as.numeric(factor(data$descr_motif_traj))
-data$descr_type_col <- as.numeric(factor(data$descr_type_col))
+data <- data %>% mutate(descr_agglo = case_when(
+  descr_agglo == "En agglomération" ~ 1,
+  descr_agglo == "Hors agglomération" ~ 2
+))
+
+data <- data %>% mutate(descr_athmo = case_when(
+  descr_athmo == "Autre" ~ 1,
+  descr_athmo == "Brouillard – fumée" ~ 2,
+  descr_athmo == "Neige – grêle" ~ 3,
+  descr_athmo == "Normale" ~ 4,
+  descr_athmo == "Pluie forte" ~ 5,
+  descr_athmo == "Pluie légère" ~ 6,
+  descr_athmo == "Temps éblouissant" ~ 7,
+  descr_athmo == "Temps couvert" ~ 8,
+  descr_athmo == "Vent fort – tempête" ~ 9
+))
+
+data <- data %>% mutate(descr_lum = case_when(
+  descr_lum == "Crépuscule ou aube" ~ 1,
+  descr_lum == "Nuit avec éclairage public allumé" ~ 2,
+  descr_lum == "Nuit avec éclairage public non allumé" ~ 3,
+  descr_lum == "Nuit sans éclairage public" ~ 4,
+  descr_lum == "Plein jour" ~ 5
+))
+
+data <- data %>% mutate(descr_etat_surf = case_when(
+  descr_etat_surf == "Autre" ~ 1,
+  descr_etat_surf == "Boue" ~ 2,
+  descr_etat_surf == "Corps gras – huile" ~ 3,
+  descr_etat_surf == "Enneigée" ~ 4,
+  descr_etat_surf == "Flaques" ~ 5,
+  descr_etat_surf == "Inondée" ~ 6,
+  descr_etat_surf == "Mouillée" ~ 7,
+  descr_etat_surf == "Normale" ~ 8,
+  descr_etat_surf == "Verglacée" ~ 9
+))
+
+data <- data %>% mutate(description_intersection = case_when(
+  description_intersection == "Autre intersection" ~ 1,
+  description_intersection == "Giratoire" ~ 2,
+  description_intersection == "Hors intersection" ~ 3,
+  description_intersection == "Intersection à plus de 4 branches" ~ 4,
+  description_intersection == "Intersection en T" ~ 5,
+  description_intersection == "Intersection en X" ~ 6,
+  description_intersection == "Intersection en Y" ~ 7,
+  description_intersection == "Passage à niveau" ~ 8,
+  description_intersection == "Place" ~ 9
+))
+
+data <- data %>% mutate(descr_dispo_secu = case_when(
+  descr_dispo_secu == "Autre - Non determinable" ~ 1,
+  descr_dispo_secu == "Autre - Non utilisé" ~ 2,
+  descr_dispo_secu == "Autre - Utilisé" ~ 3,
+  descr_dispo_secu == "Présence équipement réfléchissant - Utilisation non déterminable" ~ 4,
+  descr_dispo_secu == "Présence de ceinture de sécurité non utilisée" ~ 5,
+  descr_dispo_secu == "Présence d'un dispositif enfant - Utilisation non déterminable" ~ 6,
+  descr_dispo_secu == "Présence équipement réfléchissant non utilisé" ~ 7,
+  descr_dispo_secu == "Présence d'un casque - Utilisation non déterminable" ~ 8,
+  descr_dispo_secu == "Présence d'un casque non utilisé" ~ 9,
+  descr_dispo_secu == "Présence d'un dispositif enfant non utilisé" ~ 10,
+  descr_dispo_secu == "Présence d'une ceinture de sécurité - Utilisation non déterminable" ~ 11,
+  descr_dispo_secu == "Utilisation d'un équipement réfléchissant" ~ 12,
+  descr_dispo_secu == "Utilisation d'un casque" ~ 13,
+  descr_dispo_secu == "Utilisation d'un dispositif enfant" ~ 14,
+  descr_dispo_secu == "Utilisation d'une ceinture de sécurité" ~ 15,
+))
+
+data <- data %>% mutate(descr_motif_traj = case_when(
+  descr_motif_traj == "Autre" ~ 1,
+  descr_motif_traj == "Courses – achats" ~ 2,
+  descr_motif_traj == "Domicile – école" ~ 3,
+  descr_motif_traj == "Domicile – travail" ~ 4,
+  descr_motif_traj == "Promenade – loisirs" ~ 5,
+  descr_motif_traj == "Utilisation professionnelle" ~ 6
+))
+
+data <- data %>% mutate(descr_type_col = case_when(
+  descr_type_col == "Autre collision" ~ 1,
+  descr_type_col == "Deux véhicules - Frontale" ~ 2,
+  descr_type_col == "Deux véhicules – Par l'arrière" ~ 3,
+  descr_type_col == "Deux véhicules – Par le côté" ~ 4,
+  descr_type_col == "Sans collision" ~ 5,
+  descr_type_col == "Trois véhicules et plus – Collisions multiples" ~ 6,
+  descr_type_col == "Trois véhicules et plus – En chaîne" ~ 7
+))
 
 # Mise des variables numériques sous format numériques, date sous format date, etc...
 
 data$Num_Acc <- as.numeric(data$Num_Acc)
 data$num_veh <- as.character(data$num_veh)
 data$id_usa <- as.numeric(data$id_usa)
-data$date <- as.Date(data$date)
+data$date <- as.POSIXct(data$date, format = "%Y-%m-%d %H:%M:%S")
 data$ville <- as.character(data$ville)
 data$id_code_insee <- as.character(data$id_code_insee)
 data$latitude <- as.numeric(data$latitude)
@@ -129,6 +226,4 @@ accidents_par_region <- accidents_par_region %>% mutate(REG = case_when(
 
 
 # Affichage du résultat
-print(accidents_par_region, n=100)
-
-
+accidents_par_region
