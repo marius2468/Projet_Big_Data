@@ -1,3 +1,4 @@
+library(readxl)
 library(rlang)
 library(dplyr)
 library(xts)
@@ -57,3 +58,77 @@ acf(accidents_par_mois_counts)
 accidents_par_semaine_counts <- table(format(data$date, "%Y-%U"))
 plot(accidents_par_semaine_counts, type = "l")
 acf(accidents_par_semaine_counts)
+
+# Lecture du fichier Excel
+data_pop <- read_excel("base-cc-evol-struct-pop-2009.xls", range = "A6:E36686")
+
+# Sélection des colonnes pertinentes : code INSEE, région et population
+data_pop <- data_pop %>% select(`CODGEO`, `REG`, `P09_POP`)
+
+# Agrégation des données par région pour calculer le nombre total d'habitants
+habitants_par_region <- data_pop %>%
+  group_by(`REG`) %>%
+  summarise(Nombre_habitants = sum(`P09_POP`))
+
+# Affichage du résultat
+print(habitants_par_region, n = 50)
+
+# Jointure des deux tables sur le code INSEE
+data <- left_join(data, data_pop, by = c("id_code_insee" = "CODGEO"))
+
+# Vérification de la nouvelle table
+head(data)
+
+# Agrégation des données pour calculer le nombre d'accidents par région et par gravité
+accidents_par_region <- data %>%
+  group_by(REG, descr_grav) %>%
+  summarise(Nombre_accidents = n(), .groups = 'drop')
+
+# Jointure avec le nombre d'habitants par région
+accidents_par_region <- left_join(accidents_par_region, habitants_par_region, by = "REG")
+
+# Calcul du nombre d'accidents pour 100 000 habitants
+accidents_par_region <- accidents_par_region %>% 
+  mutate(Accidents_per_100k = (Nombre_accidents / Nombre_habitants) * 100000)
+
+accidents_par_region <- accidents_par_region %>% mutate(descr_grav = case_when(
+  descr_grav == 1 ~ "Indemne",
+  descr_grav == 2 ~ "Blessé léger",
+  descr_grav == 3 ~ "Blessé hospitalisé",
+  descr_grav == 4 ~ "Tué"
+))
+
+accidents_par_region <- accidents_par_region %>% mutate(REG = case_when(
+  REG == "01" ~ "Guadeloupe",
+  REG == "02" ~ "Martinique",
+  REG == "03" ~ "Guyane Française",
+  REG == "04" ~ "La Réunion",
+  REG == "82" ~ "Rhône-Alpes",
+  REG == "22" ~ "Picardie",
+  REG == "83" ~ "Auvergne",
+  REG == "93" ~ "Provence-Alpes-Côte d'Azur",
+  REG == "21" ~ "Champagne-Ardenne",
+  REG == "73" ~ "Midi-Pyrénées",
+  REG == "91" ~ "Languedoc-Roussillon",
+  REG == "25" ~ "Basse-Normandie",
+  REG == "54" ~ "Poitou-Charentes",
+  REG == "24" ~ "Centre",
+  REG == "74" ~ "Limousin",
+  REG == "94" ~ "Corse",
+  REG == "26" ~ "Bourgogne",
+  REG == "53" ~ "Bretagne",
+  REG == "72" ~ "Aquitaine",
+  REG == "43" ~ "Franche-Comté",
+  REG == "23" ~ "Haute-Normandie",
+  REG == "52" ~ "Pays de la Loire",
+  REG == "41" ~ "Lorraine",
+  REG == "31" ~ "Nord-Pas-de-Calais",
+  REG == "42" ~ "Alsace",
+  REG == "11" ~ "Île-de-France",
+))
+
+
+# Affichage du résultat
+print(accidents_par_region, n=100)
+
+
