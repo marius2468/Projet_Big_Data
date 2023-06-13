@@ -48,18 +48,14 @@ data$an_nais <- as.numeric(data$an_nais)
 data$age <- as.numeric(data$age)
 data$place <- as.numeric(data$place)
 
-# Série chronologique sur l’évolution du nombre d’accidents par mois
+# Compter le nombre d'accidents par mois
 accidents_par_mois_counts <- table(format(data$date, "%Y-%m"))
 plot(accidents_par_mois_counts, type = "l")
 acf(accidents_par_mois_counts)
 
-<<<<<<< HEAD
-
 # Compter le nombre d'accidents par semaine
-=======
-# Série chronologique sur l’évolution du nombre d’accidents par semaines
->>>>>>> ad2ec340e1213262c115e36864550f1afb2eb652
 accidents_par_semaine_counts <- table(format(data$date, "%Y-%U"))
 plot(accidents_par_semaine_counts, type = "l")
 acf(accidents_par_semaine_counts)
+
 
