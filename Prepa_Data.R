@@ -14,9 +14,8 @@ data <- subset(data, !apply(data == 'NULL', 1, any))
 # Répertorie et numérise toutes les catégories de véhicules
 data$descr_cat_veh <- as.numeric(factor(data$descr_cat_veh))
 
-# Répertorie et numérise toutes les catégories de niveau de gravité de l'accident
+# Répertorie et numérise plusieurs catégories 
 data$descr_grav <- as.numeric(factor(data$descr_grav))
-
 data$descr_agglo <- as.numeric(factor(data$descr_agglo))
 data$descr_athmo <- as.numeric(factor(data$descr_athmo))
 data$descr_lum <- as.numeric(factor(data$descr_lum))
