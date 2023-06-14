@@ -9,6 +9,7 @@ histogramme_conditions_atmospheriques <- data %>%
 # Renommer les catégories des conditions atmosphériques
 histogramme_conditions_atmospheriques <- histogramme_conditions_atmospheriques %>%
   mutate(descr_athmo = case_when(
+    descr_athmo == -1 ~ "Non renseigné",
     descr_athmo == 1 ~ "Autre",
     descr_athmo == 2 ~ "Brouillard – fumée",
     descr_athmo == 3 ~ "Neige – grêle",
@@ -161,7 +162,86 @@ barplot(moyenne_mensuelle$moyenne_accidents,
         las = 2)
 
 
+# Charger les données géographiques de la France
+carte <- st_read("regions.geojson")
+
+region_info <- read.csv("anciennes-nouvelles-regions.csv", sep = ";", stringsAsFactors = FALSE)
+
+# Renommer les colonnes pour une meilleure clarté
+colnames(region_info) <- c("Nouveau_Code", "Nouveau_Nom", "Anciens_Code", "Anciens_Nom")
+
+# Fusionner le dataframe data avec region_info en utilisant la colonne "REG" dans data
+# et la colonne "Anciens_Code" dans region_info
+new_data <- merge(data, region_info, by.x = "REG", by.y = "Anciens_Code")
+# Convertir la variable data en un objet spatial
+
+nb_reg <- new_data %>%
+  group_by(Nouveau_Code) %>%
+  summarise(Nombre_accidents = n())
 
 
+nb_reg$Nouveau_Code <- as.character(nb_reg$Nouveau_Code)
+
+carte_joined <- inner_join(carte, nb_reg, by = c("code" = "Nouveau_Code"))
+
+# affichage de la carte
+mapview(carte_joined)
+
+
+carte2 <- st_read("departements.geojson")
+
+
+data$dep <- ifelse(nchar(data$id_code_insee) == 5, 
+                             substr(data$id_code_insee, 1, 2), 
+                             paste0("0", substr(data$id_code_insee, 1, 1)))
+
+print(carte2$code)
+
+print(data)
+
+nb_dep <- data %>%
+  group_by(dep) %>%
+  summarise(Nombre_accidents = n())
+
+nb_dep$dep <- as.character(nb_dep$dep)
+
+carte2_joined <- inner_join(carte2, nb_dep, by = c("code" = "dep"))
+
+mapview(carte2_joined)
+
+carte3 <- st_read("regions.geojson")
+
+accidents_graves_par_region <- new_data %>%
+  filter(descr_grav %in% c(3, 4)) %>%
+  group_by(Nouveau_Code) %>%
+  summarise(Nombre_accidents_graves = n())
+
+print(accidents_graves_par_region)
+
+accidents_par_region <- new_data %>%
+  group_by(Nouveau_Code) %>%
+  summarise(Nombre_accidents = n())
+
+print(accidents_par_region)
+
+
+# Jointure avec le nombre d'habitants par région
+accidents_grave_par_region <- left_join(accidents_graves_par_region, accidents_par_region, by = "Nouveau_Code")
+
+taux_accidents_grave_par_region <- accidents_grave_par_region %>%
+  mutate(Taux_accidents_graves = (Nombre_accidents_graves / Nombre_accidents) * 100)
+
+taux_accidents_grave_par_region$Nouveau_Code <- as.character(taux_accidents_grave_par_region$Nouveau_Code)
+
+taux_accidents_grave_par_region <- taux_accidents_grave_par_region %>%
+  mutate(Taux_accidents_graves = paste0(round(Taux_accidents_graves, 2), "%"))
+
+
+print(taux_accidents_grave_par_region)
+
+carte3_joined <- inner_join(carte, taux_accidents_grave_par_region, by = c("code" = "Nouveau_Code"))
+
+
+mapview(carte3_joined)
 
 # write.csv(data, file = "export.csv", row.names = FALSE)

@@ -10,6 +10,11 @@ library(sf)
 library(rnaturalearth)
 library(rnaturalearthdata)
 library(ggmap)
+library(rgdal)
+library(geojsonio)
+library(mapview)
+library(tibble)
+
 
 data <- read.csv("stat_acc_V3.csv", sep = ";")
 
@@ -46,6 +51,8 @@ data <- subset(data, !apply(data == 'NULL', 1, any))
 # Répertorie et numérise plusieurs catégories 
 data$descr_cat_veh <- as.numeric(factor(data$descr_cat_veh))
 
+
+
 data <- data %>% mutate(descr_grav = case_when(
     descr_grav == "Indemne" ~ 1,
     descr_grav == "Blessé léger" ~ 2,
@@ -54,11 +61,12 @@ data <- data %>% mutate(descr_grav = case_when(
   ))
 
 data <- data %>% mutate(descr_agglo = case_when(
-  descr_agglo == "En agglomération" ~ 1,
-  descr_agglo == "Hors agglomération" ~ 2
+  descr_agglo =="Hors agglomération" ~ 1,
+  descr_agglo == "En agglomération" ~ 2,
 ))
 
 data <- data %>% mutate(descr_athmo = case_when(
+  descr_athmo == "Non renseigné" ~ -1,
   descr_athmo == "Autre" ~ 1,
   descr_athmo == "Brouillard – fumée" ~ 2,
   descr_athmo == "Neige – grêle" ~ 3,
@@ -79,6 +87,7 @@ data <- data %>% mutate(descr_lum = case_when(
 ))
 
 data <- data %>% mutate(descr_etat_surf = case_when(
+  descr_etat_surf == "Non renseigné" ~ -1,
   descr_etat_surf == "Autre" ~ 1,
   descr_etat_surf == "Boue" ~ 2,
   descr_etat_surf == "Corps gras – huile" ~ 3,
@@ -103,24 +112,25 @@ data <- data %>% mutate(description_intersection = case_when(
 ))
 
 data <- data %>% mutate(descr_dispo_secu = case_when(
-  descr_dispo_secu == "Autre - Non determinable" ~ 1,
+  descr_dispo_secu == "Autre - Non déterminable" ~ 1,
   descr_dispo_secu == "Autre - Non utilisé" ~ 2,
   descr_dispo_secu == "Autre - Utilisé" ~ 3,
-  descr_dispo_secu == "Présence équipement réfléchissant - Utilisation non déterminable" ~ 4,
-  descr_dispo_secu == "Présence de ceinture de sécurité non utilisée" ~ 5,
-  descr_dispo_secu == "Présence d'un dispositif enfant - Utilisation non déterminable" ~ 6,
-  descr_dispo_secu == "Présence équipement réfléchissant non utilisé" ~ 7,
-  descr_dispo_secu == "Présence d'un casque - Utilisation non déterminable" ~ 8,
-  descr_dispo_secu == "Présence d'un casque non utilisé" ~ 9,
-  descr_dispo_secu == "Présence d'un dispositif enfant non utilisé" ~ 10,
-  descr_dispo_secu == "Présence d'une ceinture de sécurité - Utilisation non déterminable" ~ 11,
-  descr_dispo_secu == "Utilisation d'un équipement réfléchissant" ~ 12,
-  descr_dispo_secu == "Utilisation d'un casque" ~ 13,
-  descr_dispo_secu == "Utilisation d'un dispositif enfant" ~ 14,
-  descr_dispo_secu == "Utilisation d'une ceinture de sécurité" ~ 15,
+  descr_dispo_secu == "Présence d'un casque - Utilisation non déterminable" ~ 4,
+  descr_dispo_secu == "Présence d'un casque non utilisé " ~ 5,
+  descr_dispo_secu == "Présence d'un dispositif enfant non utilisé" ~ 6,
+  descr_dispo_secu == "Présence d'un équipement réfléchissant non utilisé" ~ 7,
+  descr_dispo_secu == "Présence d'une ceinture de sécurité - Utilisation non déterminable" ~ 8,
+  descr_dispo_secu == "Présence de ceinture de sécurité non utilisée " ~ 9,
+  descr_dispo_secu == "Présence dispositif enfant - Utilisation non déterminable" ~ 10,
+  descr_dispo_secu == "Présence équipement réfléchissant - Utilisation non déterminable" ~ 11,
+  descr_dispo_secu == "Utilisation d'un casque " ~ 12,
+  descr_dispo_secu == "Utilisation d'un équipement réfléchissant " ~ 13,
+  descr_dispo_secu == "Utilisation d'une ceinture de sécurité " ~ 14,
+  descr_dispo_secu == "Utilisation d'un dispositif enfant " ~ 15
 ))
 
 data <- data %>% mutate(descr_motif_traj = case_when(
+  descr_motif_traj == "Non renseigné" ~ -1,
   descr_motif_traj == "Autre" ~ 1,
   descr_motif_traj == "Courses – achats" ~ 2,
   descr_motif_traj == "Domicile – école" ~ 3,
@@ -130,15 +140,16 @@ data <- data %>% mutate(descr_motif_traj = case_when(
 ))
 
 data <- data %>% mutate(descr_type_col = case_when(
-  descr_type_col == "Autre collision" ~ 1,
-  descr_type_col == "Deux véhicules - Frontale" ~ 2,
-  descr_type_col == "Deux véhicules – Par l'arrière" ~ 3,
-  descr_type_col == "Deux véhicules – Par le côté" ~ 4,
-  descr_type_col == "Sans collision" ~ 5,
-  descr_type_col == "Trois véhicules et plus – Collisions multiples" ~ 6,
-  descr_type_col == "Trois véhicules et plus – En chaîne" ~ 7
+  descr_type_col == "Non renseigné" ~ -1,
+  descr_type_col == "Deux véhicules - Frontale" ~ 1,
+  descr_type_col == "Deux véhicules – Par l’arrière" ~ 2,
+  descr_type_col == "Deux véhicules – Par le coté" ~ 3,
+  descr_type_col == "Trois véhicules et plus – En chaîne" ~ 4,
+  descr_type_col == "Trois véhicules et plus – Collisions multiples" ~ 5,
+  descr_type_col == "Sans collision" ~ 6,
+  descr_type_col == "Autre collision" ~ 7
 ))
-
+table(data$descr_dispo_secu)
 # Mise des variables numériques sous format numériques, date sous format date, etc...
 
 data$Num_Acc <- as.numeric(data$Num_Acc)
@@ -188,6 +199,8 @@ accidents_par_region <- data %>%
   group_by(REG, descr_grav) %>%
   summarise(Nombre_accidents = n(), .groups = 'drop')
 
+print(accidents_par_region)
+
 # Jointure avec le nombre d'habitants par région
 accidents_par_region <- left_join(accidents_par_region, habitants_par_region, by = "REG")
 
@@ -231,6 +244,6 @@ accidents_par_region <- accidents_par_region %>% mutate(REG = case_when(
   REG == "11" ~ "Île-de-France",
 ))
 
-
+print(data)
 # Affichage du résultat
 accidents_par_region
