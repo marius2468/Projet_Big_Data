@@ -5,6 +5,12 @@ library(xts)
 library(lubridate)
 library(stats)
 library(forecast)
+library(ggplot2)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(ggmap)
+
 data <- read.csv("stat_acc_V3.csv", sep = ";")
 
 # Enleve les cases vide
@@ -35,6 +41,7 @@ data <- subset(data, latitude >= -90 & latitude <= 90 & longitude >= -180 & long
 
 # Enleve les lignes comportant une case NULL
 data <- subset(data, !apply(data == 'NULL', 1, any))
+
 
 # Répertorie et numérise plusieurs catégories 
 data$descr_cat_veh <- as.numeric(factor(data$descr_cat_veh))

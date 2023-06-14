@@ -1,5 +1,6 @@
 source("Prepa_Data.R")
 
+
 # Création de l'histogramme du nombre d'accidents par conditions atmosphériques
 histogramme_conditions_atmospheriques <- data %>%
   group_by(descr_athmo) %>%
@@ -117,11 +118,8 @@ barplot(top_20_villes, horiz = FALSE,
 
 
 # Création de l'histogramme du nombre d'accidents par tranche d'âge
-histogramme_age <- data %>%
-  group_by(age) %>%
-  summarise(Nombre_accidents = n())
 
-histogramme_age <- histogramme_age %>% mutate(age = case_when(
+histogramme_age <- data %>% mutate(age = case_when(
   age < 18 ~ "Moins de 18 ans",
   age >= 18 & age <= 24 ~ "18-24 ans",
   age >= 25 & age <= 34 ~ "25-34 ans",
@@ -135,6 +133,7 @@ histogramme_age <- histogramme_age %>%
   group_by(age) %>%
   summarise(Nombre_accidents = n())
 
+
 # Tracer l'histogramme
 barplot(histogramme_age$Nombre_accidents,
         names.arg = histogramme_age$age,
@@ -142,6 +141,25 @@ barplot(histogramme_age$Nombre_accidents,
         col = "lightblue",
         border = "black",
         las = 2)
+
+
+# Création d'une nouvelle colonne 'mois' pour extraire le mois à partir de la colonne 'date'
+data$mois <- format(data$date, "%Y-%m")
+
+# Calculer la moyenne mensuelle des accidents
+moyenne_mensuelle <- data %>%
+  group_by(mois) %>%
+  summarise(moyenne_accidents = mean(n()))
+
+
+# Tracer le graphique de la moyenne mensuelle des accidents
+barplot(moyenne_mensuelle$moyenne_accidents,
+        names.arg = moyenne_mensuelle$mois,
+        main = "Moyenne mensuelle des accidents",
+        col = "lightblue",
+        border = "black",
+        las = 2)
+
 
 
 
