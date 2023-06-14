@@ -195,9 +195,6 @@ data$dep <- ifelse(nchar(data$id_code_insee) == 5,
                              substr(data$id_code_insee, 1, 2), 
                              paste0("0", substr(data$id_code_insee, 1, 1)))
 
-print(carte2$code)
-
-print(data)
 
 nb_dep <- data %>%
   group_by(dep) %>%
@@ -209,6 +206,8 @@ carte2_joined <- inner_join(carte2, nb_dep, by = c("code" = "dep"))
 
 mapview(carte2_joined)
 
+# =======
+
 carte3 <- st_read("regions.geojson")
 
 accidents_graves_par_region <- new_data %>%
@@ -216,14 +215,9 @@ accidents_graves_par_region <- new_data %>%
   group_by(Nouveau_Code) %>%
   summarise(Nombre_accidents_graves = n())
 
-print(accidents_graves_par_region)
-
 accidents_par_region <- new_data %>%
   group_by(Nouveau_Code) %>%
   summarise(Nombre_accidents = n())
-
-print(accidents_par_region)
-
 
 # Jointure avec le nombre d'habitants par région
 accidents_grave_par_region <- left_join(accidents_graves_par_region, accidents_par_region, by = "Nouveau_Code")
@@ -236,12 +230,36 @@ taux_accidents_grave_par_region$Nouveau_Code <- as.character(taux_accidents_grav
 taux_accidents_grave_par_region <- taux_accidents_grave_par_region %>%
   mutate(Taux_accidents_graves = paste0(round(Taux_accidents_graves, 2), "%"))
 
-
-print(taux_accidents_grave_par_region)
-
-carte3_joined <- inner_join(carte, taux_accidents_grave_par_region, by = c("code" = "Nouveau_Code"))
-
+carte3_joined <- inner_join(carte3, taux_accidents_grave_par_region, by = c("code" = "Nouveau_Code"))
 
 mapview(carte3_joined)
+
+
+#====
+
+carte4 <- st_read("departements.geojson")
+
+nb_dep_grave <- data %>%
+  filter(descr_grav %in% c(3, 4)) %>%
+  group_by(dep) %>%
+  summarise(Nombre_accidents_graves = n())
+
+
+# Jointure avec le nombre d'habitants par région
+accidents_grave_par_dep <- left_join(nb_dep, nb_dep_grave, by = "dep")
+
+
+taux_accidents_grave_par_dep <- accidents_grave_par_dep %>%
+  mutate(Taux_accidents_graves = (Nombre_accidents_graves / Nombre_accidents) * 100)
+
+taux_accidents_grave_par_dep <- taux_accidents_grave_par_dep %>%
+  mutate(Taux_accidents_graves = paste0(round(Taux_accidents_graves, 2), "%"))
+
+print(taux_accidents_grave_par_dep)
+
+
+carte4_joined <- inner_join(carte4, taux_accidents_grave_par_dep, by = c("code" = "dep"))
+
+mapview(carte4_joined)
 
 # write.csv(data, file = "export.csv", row.names = FALSE)
