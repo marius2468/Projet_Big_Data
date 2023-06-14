@@ -54,7 +54,6 @@ barplot(histogramme_conditions_surface$Nombre_accidents,
         border = "black",
         las = 2)
 
-
 # Création de l'histogramme du nombre d'accidents selon la gravité
 histogramme_gravité <- data %>%
   group_by(descr_grav) %>%
@@ -111,6 +110,35 @@ top_20_villes <- villes_tries[1:20]
 barplot(top_20_villes, horiz = FALSE,
         ylab = "Nombre d'accidents",
         main = "Nombre d'accidents pour les 20 villes les plus touchées",
+        col = "lightblue",
+        border = "black",
+        las = 2)
+
+
+
+# Création de l'histogramme du nombre d'accidents par tranche d'âge
+histogramme_age <- data %>%
+  group_by(age) %>%
+  summarise(Nombre_accidents = n())
+
+histogramme_age <- histogramme_age %>% mutate(age = case_when(
+  age < 18 ~ "Moins de 18 ans",
+  age >= 18 & age <= 24 ~ "18-24 ans",
+  age >= 25 & age <= 34 ~ "25-34 ans",
+  age >= 35 & age <= 44 ~ "35-44 ans",
+  age >= 45 & age <= 54 ~ "45-54 ans",
+  age >= 55 & age <= 64 ~ "55-64 ans",
+  age >= 65 ~ "65 ans et plus"
+))
+
+histogramme_age <- histogramme_age %>%
+  group_by(age) %>%
+  summarise(Nombre_accidents = n())
+
+# Tracer l'histogramme
+barplot(histogramme_age$Nombre_accidents,
+        names.arg = histogramme_age$age,
+        main = "Nombre d'accidents par tranche d'âge",
         col = "lightblue",
         border = "black",
         las = 2)
