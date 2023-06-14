@@ -1,3 +1,4 @@
+# Libraries
 library(readxl)
 library(rlang)
 library(dplyr)
@@ -14,51 +15,55 @@ library(rgdal)
 library(geojsonio)
 library(mapview)
 library(tibble)
+library(foreign)
+library(tidyverse)
 
-
+# Read data
 data <- read.csv("stat_acc_V3.csv", sep = ";")
 
-# Enleve les cases vide
+
+# Remove NA values
 data <- na.omit(data) 
 
-# Charger les données des arrondissements de Paris, Marseille et Lyon
-arrondissements <- read.csv("donnees_arrondissements.csv", sep = ";")
+# Load district data for Paris, Marseille, and Lyon
+districtsData <- read.csv("donnees_arrondissements.csv", sep = ";")
 
-# Jointure des données des accidents avec les données des arrondissements
-data <- merge(data, arrondissements, by.x = "ville", by.y = "ville", all.x = TRUE)
+# Join accident data with district data
+data <- merge(data, districtsData, by.x = "ville", by.y = "ville", all.x = TRUE)
 
-# Créer une liste des villes à rechercher
-villes <- c("PARIS", "MARSEILLE", "LYON")
-
-# Remplacer les latitudes et longitudes des accidents dans Paris, Marseille et Lyon
-for (ville in villes) {
-  pattern <- paste0("^", ville)  # Construire le motif de recherche
-  indices <- grepl(pattern, data$ville)  # Rechercher les indices correspondants
-  data$latitude[indices] <- data$latitude_arr[indices]  # Remplacer les latitudes
-  data$longitude[indices] <- data$longitude_arr[indices]  # Remplacer les longitudes
+# Replace latitudes and longitudes of accidents in Paris, Marseille, and Lyon
+for (city in c("PARIS", "MARSEILLE", "LYON")) {
+  pattern <- paste0("^", city)  # Search pattern
+  indices <- grepl(pattern, data$ville)  # Corresponding indices
+  data$latitude[indices] <- data$latitudeArr[indices]  # Replace latitudes
+  data$longitude[indices] <- data$longitudeArr[indices]  # Replace longitudes
 }
 
-# Supprimer les colonnes supplémentaires des données des arrondissements
-data <- subset(data, select = -c(latitude_arr, longitude_arr))
+# Remove additional columns of district data
+data <- subset(data, select = -c(latitudeArr, longitudeArr))
 
-# Enleve les longitudes et latitude incohérentes
-data <- subset(data, latitude >= -90 & latitude <= 90 & longitude >= -180 & longitude <= 180) 
+# Remove data with incorrect latitude and longitude
+data <- subset(data, latitude >= 40 & latitude <= 52 & longitude >= -6 & longitude <= 10) 
 
-# Enleve les lignes comportant une case NULL
+# Remove rows with NULL values
 data <- subset(data, !apply(data == 'NULL', 1, any))
 
+# Make sure 'an_nais' is numeric
+data$an_nais <- as.numeric(data$an_nais)
 
-# Répertorie et numérise plusieurs catégories 
+# Calculate age based on current year
+data <- data %>%
+  mutate(age = as.integer(format(Sys.Date(), "%Y")) - an_nais)
+
+# List and digitize several categories 
 data$descr_cat_veh <- as.numeric(factor(data$descr_cat_veh))
 
-
-
 data <- data %>% mutate(descr_grav = case_when(
-    descr_grav == "Indemne" ~ 1,
-    descr_grav == "Blessé léger" ~ 2,
-    descr_grav == "Blessé hospitalisé" ~ 3,
-    descr_grav == "Tué" ~ 4
-  ))
+  descr_grav == "Indemne" ~ 1,
+  descr_grav == "Blessé léger" ~ 2,
+  descr_grav == "Blessé hospitalisé" ~ 3,
+  descr_grav == "Tué" ~ 4
+))
 
 data <- data %>% mutate(descr_agglo = case_when(
   descr_agglo =="Hors agglomération" ~ 1,
@@ -126,7 +131,7 @@ data <- data %>% mutate(descr_dispo_secu = case_when(
   descr_dispo_secu == "Utilisation d'un casque " ~ 12,
   descr_dispo_secu == "Utilisation d'un équipement réfléchissant " ~ 13,
   descr_dispo_secu == "Utilisation d'une ceinture de sécurité " ~ 14,
-  descr_dispo_secu == "Utilisation d'un dispositif enfant " ~ 15
+  descr_dispo_secu == "Utilisation d'un dispositif enfant" ~ 15
 ))
 
 data <- data %>% mutate(descr_motif_traj = case_when(
@@ -149,9 +154,10 @@ data <- data %>% mutate(descr_type_col = case_when(
   descr_type_col == "Sans collision" ~ 6,
   descr_type_col == "Autre collision" ~ 7
 ))
-table(data$descr_dispo_secu)
-# Mise des variables numériques sous format numériques, date sous format date, etc...
 
+
+
+# Convert variables into their appropriate types
 data$Num_Acc <- as.numeric(data$Num_Acc)
 data$num_veh <- as.character(data$num_veh)
 data$id_usa <- as.numeric(data$id_usa)
@@ -164,58 +170,52 @@ data$an_nais <- as.numeric(data$an_nais)
 data$age <- as.numeric(data$age)
 data$place <- as.numeric(data$place)
 
-# Série chronologique sur l’évolution du nombre d’accidents par mois
-accidents_par_mois_counts <- table(format(data$date, "%Y-%m"))
-plot(accidents_par_mois_counts, type = "l")
-acf(accidents_par_mois_counts)
+# Time series on the evolution of the number of accidents per month
+accidentsPerMonth <- table(format(data$date, "%Y-%m"))
+plot(accidentsPerMonth, type = "l")
+acf(accidentsPerMonth)
 
-# Série chronologique sur l’évolution du nombre d’accidents par semaines
-accidents_par_semaine_counts <- table(format(data$date, "%Y-%U"))
-plot(accidents_par_semaine_counts, type = "l")
-acf(accidents_par_semaine_counts)
+# Time series on the evolution of the number of accidents per week
+accidentsPerWeek <- table(format(data$date, "%Y-%U"))
+plot(accidentsPerWeek, type = "l")
+acf(accidentsPerWeek)
 
-# Lecture du fichier Excel
-data_pop <- read_excel("base-cc-evol-struct-pop-2009.xls", range = "A6:E36686")
+# Read Excel file
+popData <- read_excel("base-cc-evol-struct-pop-2009.xls", range = "A6:E36686")
 
-# Sélection des colonnes pertinentes : code INSEE, région et population
-data_pop <- data_pop %>% select(`CODGEO`, `REG`, `P09_POP`)
+# Select relevant columns: INSEE code, region, and population
+popData <- popData %>% select(CODGEO, REG, P09_POP)
 
-# Agrégation des données par région pour calculer le nombre total d'habitants
-habitants_par_region <- data_pop %>%
-  group_by(`REG`) %>%
-  summarise(Nombre_habitants = sum(`P09_POP`))
+# Aggregate data by region to calculate total number of inhabitants
+inhabitantsPerRegion <- popData %>%
+  group_by(REG) %>%
+  summarise(totalInhabitants = sum(P09_POP))
 
-# Affichage du résultat
-print(habitants_par_region, n = 50)
+# Join the two tables on the INSEE code
+data <- left_join(data, popData, by = c("id_code_insee" = "CODGEO"))
 
-# Jointure des deux tables sur le code INSEE
-data <- left_join(data, data_pop, by = c("id_code_insee" = "CODGEO"))
-
-# Vérification de la nouvelle table
-head(data)
-
-# Agrégation des données pour calculer le nombre d'accidents par région et par gravité
-accidents_par_region <- data %>%
+# Aggregate data to calculate the number of accidents by region and severity
+accidentsPerRegion <- data %>%
   group_by(REG, descr_grav) %>%
-  summarise(Nombre_accidents = n(), .groups = 'drop')
+  summarise(totalAccidents = n(), .groups = 'drop')
 
-print(accidents_par_region)
+# Join with the number of inhabitants per region
+accidentsPerRegion <- left_join(accidentsPerRegion, inhabitantsPerRegion, by = "REG")
 
-# Jointure avec le nombre d'habitants par région
-accidents_par_region <- left_join(accidents_par_region, habitants_par_region, by = "REG")
+# Calculation of the number of accidents per 100,000 inhabitants
+accidentsPerRegion <- accidentsPerRegion %>% 
+  mutate(accidentsPer100k = (totalAccidents / totalInhabitants) * 100000)
 
-# Calcul du nombre d'accidents pour 100 000 habitants
-accidents_par_region <- accidents_par_region %>% 
-  mutate(Accidents_per_100k = (Nombre_accidents / Nombre_habitants) * 100000)
-
-accidents_par_region <- accidents_par_region %>% mutate(descr_grav = case_when(
+# Renaming severity level based on the provided key-value pair
+accidentsPerRegion <- accidentsPerRegion %>% mutate(descr_grav = case_when(
   descr_grav == 1 ~ "Indemne",
   descr_grav == 2 ~ "Blessé léger",
   descr_grav == 3 ~ "Blessé hospitalisé",
   descr_grav == 4 ~ "Tué"
 ))
 
-accidents_par_region <- accidents_par_region %>% mutate(REG = case_when(
+# Renaming regions based on the provided key-value pair
+accidentsPerRegion <- accidentsPerRegion %>% mutate(REG = case_when(
   REG == "01" ~ "Guadeloupe",
   REG == "02" ~ "Martinique",
   REG == "03" ~ "Guyane Française",
@@ -244,6 +244,5 @@ accidents_par_region <- accidents_par_region %>% mutate(REG = case_when(
   REG == "11" ~ "Île-de-France",
 ))
 
-print(data)
-# Affichage du résultat
-accidents_par_region
+# Displaying the final data
+print(accidentsPerRegion)

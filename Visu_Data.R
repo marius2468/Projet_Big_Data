@@ -1,126 +1,150 @@
+# Load data preparation script
 source("Prepa_Data.R")
 
+# ==============================================================================
+# Représentation graphique du nombre d’accidents en fonction des conditions atmosphériques
 
-# Création de l'histogramme du nombre d'accidents par conditions atmosphériques
-histogramme_conditions_atmospheriques <- data %>%
+
+# Create histogram of accidents by weather conditions
+weatherHistogram <- data %>%
   group_by(descr_athmo) %>%
-  summarise(Nombre_accidents = n())
+  summarise(accidentCount = n())
 
-# Renommer les catégories des conditions atmosphériques
-histogramme_conditions_atmospheriques <- histogramme_conditions_atmospheriques %>%
+# Rename weather condition categories
+weatherHistogram <- weatherHistogram %>%
   mutate(descr_athmo = case_when(
-    descr_athmo == -1 ~ "Non renseigné",
-    descr_athmo == 1 ~ "Autre",
-    descr_athmo == 2 ~ "Brouillard – fumée",
-    descr_athmo == 3 ~ "Neige – grêle",
-    descr_athmo == 4 ~ "Normale",
-    descr_athmo == 5 ~ "Pluie forte",
-    descr_athmo == 6 ~ "Pluie légère",
-    descr_athmo == 7 ~ "Temps éblouissant",
-    descr_athmo == 8 ~ "Temps couvert",
-    descr_athmo == 9 ~ "Vent fort – tempête"
+    descr_athmo == "Non renseigné" ~ -1,
+    descr_athmo == "Autre" ~ 1,
+    descr_athmo == "Brouillard – fumée" ~ 2,
+    descr_athmo == "Neige – grêle" ~ 3,
+    descr_athmo == "Normale" ~ 4,
+    descr_athmo == "Pluie forte" ~ 5,
+    descr_athmo == "Pluie légère" ~ 6,
+    descr_athmo == "Temps éblouissant" ~ 7,
+    descr_athmo == "Temps couvert" ~ 8,
+    descr_athmo == "Vent fort – tempête" ~ 9
   ))
 
-# Tracer l'histogramme
-barplot(histogramme_conditions_atmospheriques$Nombre_accidents,
-        names.arg = histogramme_conditions_atmospheriques$descr_athmo,
-        main = "Nombre d'accidents par conditions atmosphériques",
+# Plot the histogram
+barplot(weatherHistogram$accidentCount,
+        names.arg = weatherHistogram$descr_athmo,
+        main = "Number of accidents by weather conditions",
         col = "lightblue",
         border = "black",
         las = 2)
 
 
-# Création de l'histogramme du nombre d'accidents par conditions de surface
-histogramme_conditions_surface <- data %>%
+# ==============================================================================
+# Représentation graphique du nombre d’accidents enfonction de la description de la surface
+
+
+# Create histogram of accidents by road surface conditions
+surfaceHistogram <- data %>%
   group_by(descr_etat_surf) %>%
-  summarise(Nombre_accidents = n())
+  summarise(accidentCount = n())
 
-histogramme_conditions_surface <- histogramme_conditions_surface %>%
+# Rename road surface condition categories
+surfaceHistogram <- surfaceHistogram %>%
   mutate(descr_etat_surf = case_when(
-    descr_etat_surf == 1 ~ "Autre",
-    descr_etat_surf == 2 ~ "Boue",
-    descr_etat_surf == 3 ~ "Corps gras – huile",
-    descr_etat_surf == 4 ~ "Enneigée",
-    descr_etat_surf == 5 ~ "Flaques",
-    descr_etat_surf == 6 ~ "Inondée",
-    descr_etat_surf == 7 ~ "Mouillée",
-    descr_etat_surf == 8 ~ "Normale",
-    descr_etat_surf == 9 ~ "Verglacée"
+    descr_etat_surf == "Non renseigné" ~ -1,
+    descr_etat_surf == "Autre" ~ 1,
+    descr_etat_surf == "Boue" ~ 2,
+    descr_etat_surf == "Corps gras – huile" ~ 3,
+    descr_etat_surf == "Enneigée" ~ 4,
+    descr_etat_surf == "Flaques" ~ 5,
+    descr_etat_surf == "Inondée" ~ 6,
+    descr_etat_surf == "Mouillée" ~ 7,
+    descr_etat_surf == "Normale" ~ 8,
+    descr_etat_surf == "Verglacée" ~ 9
   ))
 
-# Tracer l'histogramme
-barplot(histogramme_conditions_surface$Nombre_accidents,
-        names.arg = histogramme_conditions_surface$descr_etat_surf,
-        main = "Nombre d'accidents par conditions atmosphériques",
+# Plot the histogram
+barplot(surfaceHistogram$accidentCount,
+        names.arg = surfaceHistogram$descr_etat_surf,
+        main = "Number of accidents by road surface conditions",
         col = "lightblue",
         border = "black",
         las = 2)
 
-# Création de l'histogramme du nombre d'accidents selon la gravité
-histogramme_gravité <- data %>%
+
+# ==============================================================================
+# Représentation graphique du nombre d’accidents selon la gravité
+
+
+# Create histogram of accidents by severity
+severityHistogram <- data %>%
   group_by(descr_grav) %>%
-  summarise(Nombre_accidents = n())
+  summarise(accidentCount = n())
 
-histogramme_gravité <- histogramme_gravité %>% mutate(descr_grav = case_when(
-  descr_grav == 1 ~ "Indemne",
-  descr_grav == 2 ~ "Blessé léger",
-  descr_grav == 3 ~ "Blessé hospitalisé",
-  descr_grav == 4 ~ "Tué"
-))
+# Rename severity categories
+severityHistogram <- severityHistogram %>% 
+  mutate(descr_grav = case_when(
+    descr_grav == "Indemne" ~ 1,
+    descr_grav == "Blessé léger" ~ 2,
+    descr_grav == "Blessé hospitalisé" ~ 3,
+    descr_grav == "Tué" ~ 4
+  ))
 
-# Tracer l'histogramme
-barplot(histogramme_gravité$Nombre_accidents,
-        names.arg = histogramme_gravité$descr_grav,
-        main = "Nombre d'accidents selon la gravité",
+# Plot the histogram
+barplot(severityHistogram$accidentCount,
+        names.arg = severityHistogram$descr_grav,
+        main = "Number of accidents by severity",
         col = "lightblue",
         border = "black",
         las = 2)
 
- 
-# Création du tableau du nombre d'accidents par heure
-accidents_par_heure <- table(format(data$date, "%H"))
 
-# Conversion du tableau en dataframe
-accidents_par_heure <- as.data.frame(accidents_par_heure)
-names(accidents_par_heure) <- c("Heure", "Nombre_accidents")
+# ==============================================================================
+# Représentation graphique du nombre d’accidents par tranches d’heure
 
-# Tracer la courbe du nombre d'accidents par heure
-plot(accidents_par_heure$Nombre_accidents, type = "l",
-     xlab = "Heure",
-     ylab = "Nombre d'accidents",
-     main = "Nombre d'accidents par heure",
+
+# Create a table of accidents by hour
+accidentsByHour <- table(format(data$date, "%H"))
+
+# Convert the table to a dataframe
+accidentsByHour <- as.data.frame(accidentsByHour)
+names(accidentsByHour) <- c("Hour", "accidentCount")
+
+# Plot the line graph of accidents by hour
+plot(accidentsByHour$accidentCount, type = "l",
+     xlab = "Hour",
+     ylab = "Number of accidents",
+     main = "Number of accidents by hour",
      xlim = c(0, 23),
      col = "blue", xaxt = "n")
 
-# Ajouter des étiquettes sur l'axe des abscisses
+# Add labels to the x-axis
 axis(1, at = 0:23, labels = paste0(0:23, "h"))
 
-# Ajouter une grille en arrière-plan
-grid(lwd = 0.5)
+
+# ==============================================================================
+# Représentation graphique du nombre d’accidents par ville
 
 
-# Calculer le nombre d'accidents par ville
-accidents_par_ville <- table(data$ville)
+# Calculate the number of accidents by city
+accidentsByCity <- table(data$ville)
 
-# Trier les villes par nombre d'accidents décroissant
-villes_tries <- sort(accidents_par_ville, decreasing = TRUE)
+# Sort cities by the number of accidents in descending order
+sortedCities <- sort(accidentsByCity, decreasing = TRUE)
 
-# Sélectionner les 20 villes ayant le plus d'accidents
-top_20_villes <- villes_tries[1:20]
+# Select the top 20 cities with the highest number of accidents
+top20Cities <- sortedCities[1:20]
 
-# Tracer l'histogramme du nombre d'accidents pour les 20 villes
-barplot(top_20_villes, horiz = FALSE,
-        ylab = "Nombre d'accidents",
-        main = "Nombre d'accidents pour les 20 villes les plus touchées",
+# Plot the histogram of accidents for the top 20 cities
+barplot(top20Cities, horiz = FALSE,
+        ylab = "Number of accidents",
+        main = "Number of accidents for the top 20 most affected cities",
         col = "lightblue",
         border = "black",
         las = 2)
 
 
+# ==============================================================================
+# Représentation graphique de la quantité d’accidents en fonction des tranches d’âges
 
-# Création de l'histogramme du nombre d'accidents par tranche d'âge
 
-histogramme_age <- data %>% mutate(age = case_when(
+# Create histogram of accidents by age group
+ageHistogram <- data %>% mutate(ageGroup = case_when(
   age < 18 ~ "Moins de 18 ans",
   age >= 18 & age <= 24 ~ "18-24 ans",
   age >= 25 & age <= 34 ~ "25-34 ans",
@@ -130,136 +154,154 @@ histogramme_age <- data %>% mutate(age = case_when(
   age >= 65 ~ "65 ans et plus"
 ))
 
-histogramme_age <- histogramme_age %>%
-  group_by(age) %>%
-  summarise(Nombre_accidents = n())
+ageHistogram <- ageHistogram %>%
+  group_by(ageGroup) %>%
+  summarise(accidentCount = n())
+
+# Plot the histogram
+barplot(ageHistogram$accidentCount,
+        names.arg = ageHistogram$ageGroup,
+        main = "Number of accidents by age group",
+        col = "lightblue",
+        border = "black",
+        las = 2)
+
+# ==============================================================================
+# Représentation graphique de la moyenne mensuelle des accidents
 
 
-# Tracer l'histogramme
-barplot(histogramme_age$Nombre_accidents,
-        names.arg = histogramme_age$age,
-        main = "Nombre d'accidents par tranche d'âge",
+# Create a new column 'month' to extract the month from the 'date' column
+data$month <- format(data$date, "%Y-%m")
+
+# Calculate the monthly average of accidents
+monthlyAverage <- data %>%
+  group_by(month) %>%
+  summarise(averageAccidents = mean(n()))
+
+# Plot the bar graph of monthly average accidents
+barplot(monthlyAverage$averageAccidents,
+        names.arg = monthlyAverage$month,
+        main = "Monthly average accidents",
         col = "lightblue",
         border = "black",
         las = 2)
 
 
-# Création d'une nouvelle colonne 'mois' pour extraire le mois à partir de la colonne 'date'
-data$mois <- format(data$date, "%Y-%m")
-
-# Calculer la moyenne mensuelle des accidents
-moyenne_mensuelle <- data %>%
-  group_by(mois) %>%
-  summarise(moyenne_accidents = mean(n()))
+# ==============================================================================
+# Représentation sous formes de carte de la quantité d’accidents enregistrés par région
 
 
-# Tracer le graphique de la moyenne mensuelle des accidents
-barplot(moyenne_mensuelle$moyenne_accidents,
-        names.arg = moyenne_mensuelle$mois,
-        main = "Moyenne mensuelle des accidents",
-        col = "lightblue",
-        border = "black",
-        las = 2)
+# Load geographical data for France (regions)
+regions <- st_read("regions.geojson")
+
+regionInfo <- read.csv("anciennes-nouvelles-regions.csv", sep = ";", stringsAsFactors = FALSE)
+
+# Rename columns for clarity
+colnames(regionInfo) <- c("newCode", "newName", "oldCode", "oldName")
+
+# Merge the 'data' dataframe with 'regionInfo' using the "REG" column in 'data'
+# and the "oldCode" column in 'regionInfo'
+data <- merge(data, regionInfo, by.x = "REG", by.y = "oldCode")
+
+# Calculate the number of accidents by region
+accidentsByRegion <- data %>%
+  group_by(newCode) %>%
+  summarise(accidentCount = n())
+
+# Convert region codes to character type
+accidentsByRegion$newCode <- as.character(accidentsByRegion$newCode)
+
+# Join the regions data with the accident counts
+regionsJoined <- inner_join(regions, accidentsByRegion, by = c("code" = "newCode"))
+
+# Display the map
+mapview(regionsJoined)
 
 
-# Charger les données géographiques de la France
-carte <- st_read("regions.geojson")
-
-region_info <- read.csv("anciennes-nouvelles-regions.csv", sep = ";", stringsAsFactors = FALSE)
-
-# Renommer les colonnes pour une meilleure clarté
-colnames(region_info) <- c("Nouveau_Code", "Nouveau_Nom", "Anciens_Code", "Anciens_Nom")
-
-# Fusionner le dataframe data avec region_info en utilisant la colonne "REG" dans data
-# et la colonne "Anciens_Code" dans region_info
-new_data <- merge(data, region_info, by.x = "REG", by.y = "Anciens_Code")
-# Convertir la variable data en un objet spatial
-
-nb_reg <- new_data %>%
-  group_by(Nouveau_Code) %>%
-  summarise(Nombre_accidents = n())
+# ==============================================================================
+# Représentation sous formes de carte de la quantité d’accidents enregistrés par départements
 
 
-nb_reg$Nouveau_Code <- as.character(nb_reg$Nouveau_Code)
 
-carte_joined <- inner_join(carte, nb_reg, by = c("code" = "Nouveau_Code"))
+# Load geographical data for France (departments)
+departments <- st_read("departements.geojson")
 
-# affichage de la carte
-mapview(carte_joined)
+data$dpmt <- ifelse(nchar(data$id_code_insee) == 5, 
+                    substr(data$id_code_insee, 1, 2), 
+                    paste0("0", substr(data$id_code_insee, 1, 1)))
+
+# Calculate the number of accidents by department
+accidentsByDepartment <- data %>%
+  group_by(dpmt) %>%
+  summarise(accidentCount = n())
+
+# Convert department codes to character type
+accidentsByDepartment$dpmt <- as.character(accidentsByDepartment$dpmt)
+
+# Join the departments data with the accident counts
+departmentsJoined <- inner_join(departments, accidentsByDepartment, by = c("code" = "dpmt"))
+
+# Display the map
+mapview(departmentsJoined)
 
 
-carte2 <- st_read("departements.geojson")
+
+# ==============================================================================
+# Représentation sous formes de carte du taux d’accidents graves enregistrés par région
 
 
-data$dep <- ifelse(nchar(data$id_code_insee) == 5, 
-                             substr(data$id_code_insee, 1, 2), 
-                             paste0("0", substr(data$id_code_insee, 1, 1)))
-
-
-nb_dep <- data %>%
-  group_by(dep) %>%
-  summarise(Nombre_accidents = n())
-
-nb_dep$dep <- as.character(nb_dep$dep)
-
-carte2_joined <- inner_join(carte2, nb_dep, by = c("code" = "dep"))
-
-mapview(carte2_joined)
-
-# =======
-
-carte3 <- st_read("regions.geojson")
-
-accidents_graves_par_region <- new_data %>%
+severeAccidentsByRegion <- data %>%
   filter(descr_grav %in% c(3, 4)) %>%
-  group_by(Nouveau_Code) %>%
-  summarise(Nombre_accidents_graves = n())
+  group_by(newCode) %>%
+  summarise(severeAccidentCount = n())
 
-accidents_par_region <- new_data %>%
-  group_by(Nouveau_Code) %>%
-  summarise(Nombre_accidents = n())
+rateAccidentsByRegion <- data %>%
+  group_by(newCode) %>%
+  summarise(accidentCount = n())
 
-# Jointure avec le nombre d'habitants par région
-accidents_grave_par_region <- left_join(accidents_graves_par_region, accidents_par_region, by = "Nouveau_Code")
+# Join severe accidents and total accidents by region
+severeAccidentsByRegion <- left_join(severeAccidentsByRegion, rateAccidentsByRegion, by = "newCode")
 
-taux_accidents_grave_par_region <- accidents_grave_par_region %>%
-  mutate(Taux_accidents_graves = (Nombre_accidents_graves / Nombre_accidents) * 100)
+# Calculate the percentage of severe accidents by region
+severeAccidentsByRegion <- severeAccidentsByRegion %>%
+  mutate(severeAccidentRate = (severeAccidentCount / accidentCount) * 100)
 
-taux_accidents_grave_par_region$Nouveau_Code <- as.character(taux_accidents_grave_par_region$Nouveau_Code)
+severeAccidentsByRegion$newCode <- as.character(severeAccidentsByRegion$newCode)
 
-taux_accidents_grave_par_region <- taux_accidents_grave_par_region %>%
-  mutate(Taux_accidents_graves = paste0(round(Taux_accidents_graves, 2), "%"))
+severeAccidentsByRegion <- severeAccidentsByRegion %>%
+  mutate(severeAccidentRate = paste0(round(severeAccidentRate, 2), "%"))
 
-carte3_joined <- inner_join(carte3, taux_accidents_grave_par_region, by = c("code" = "Nouveau_Code"))
+regionsJoined <- inner_join(regions, severeAccidentsByRegion, by = c("code" = "newCode"))
 
-mapview(carte3_joined)
+# Display the map
+mapview(regionsJoined)
 
 
-#====
 
-carte4 <- st_read("departements.geojson")
+# ==============================================================================
+# Représentation sous formes de carte du taux d’accidents graves enregistrés par départements
 
-nb_dep_grave <- data %>%
+
+severeAccidentsByDepartment <- data %>%
   filter(descr_grav %in% c(3, 4)) %>%
-  group_by(dep) %>%
-  summarise(Nombre_accidents_graves = n())
+  group_by(dpmt) %>%
+  summarise(severeAccidentCount = n())
 
+# Join the departments data with the severe accident counts
+departmentsJoined <- left_join(accidentsByDepartment, severeAccidentsByDepartment, by = "dpmt")
 
-# Jointure avec le nombre d'habitants par région
-accidents_grave_par_dep <- left_join(nb_dep, nb_dep_grave, by = "dep")
+# Calculate the percentage of severe accidents by department
+severeAccidentsByDepartment <- departmentsJoined %>%
+  mutate(severeAccidentRate = (severeAccidentCount / accidentCount) * 100)
 
+severeAccidentsByDepartment <- severeAccidentsByDepartment %>%
+  mutate(severeAccidentRate = paste0(round(severeAccidentRate, 2), "%"))
 
-taux_accidents_grave_par_dep <- accidents_grave_par_dep %>%
-  mutate(Taux_accidents_graves = (Nombre_accidents_graves / Nombre_accidents) * 100)
+print(severeAccidentsByDepartment)
 
-taux_accidents_grave_par_dep <- taux_accidents_grave_par_dep %>%
-  mutate(Taux_accidents_graves = paste0(round(Taux_accidents_graves, 2), "%"))
+departmentsJoined <- inner_join(departments, severeAccidentsByDepartment, by = c("code" = "dpmt"))
 
-print(taux_accidents_grave_par_dep)
+# Display the map
+mapview(departmentsJoined)
 
-
-carte4_joined <- inner_join(carte4, taux_accidents_grave_par_dep, by = c("code" = "dep"))
-
-mapview(carte4_joined)
-
-# write.csv(data, file = "export.csv", row.names = FALSE)
+write.csv(data, file = "export.csv", row.names = FALSE)
