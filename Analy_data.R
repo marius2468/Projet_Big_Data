@@ -20,9 +20,9 @@ chisq.test(tableau_2)
 chisq.test(tableau_3)
 
 #Affichage des mosaicplot
-mosaicplot(tableau)
-mosaicplot(tableau_2)
-mosaicplot(tableau_3)
+mosaicplot(tableau, color = "blue", main = "descr_cat_veh en fonction de la descr_etat_surf")
+mosaicplot(tableau_2, color ="green", main = "descr_cat_veh en fonction de la descr_etat_surf")
+mosaicplot(tableau_3, color ="purple", main = "desc_agglo en fonction de la desc_type_col")
 
 # Construit le tableau des mois en fonction du nombre d'accidents 
 accidents_par_mois <- as.data.frame(accidents_par_mois_counts)
