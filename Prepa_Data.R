@@ -1,3 +1,5 @@
+# Ce fichier représente la partie 1 (Préparation) du projet Big Data
+
 # Libraries
 library(readxl)
 library(rlang)
@@ -18,6 +20,9 @@ library(tibble)
 library(foreign)
 library(tidyverse)
 library(tsibble)
+
+# =========================================================================== MF
+# Traitements appliqué lorsqu’il manque des informations ou que ces informations ne sont pas exploitables
 
 # Read data
 data <- read.csv("stat_acc_V3.csv", sep = ";")
@@ -54,6 +59,11 @@ data$an_nais <- as.numeric(data$an_nais)
 # Calculate age based on current year
 data <- data %>%
   mutate(age = as.integer(format(Sys.Date(), "%Y")) - an_nais)
+
+
+# =========================================================================== MC
+# Recoder des variables multimodales en chiffres 
+
 
 # List and digitize several categories 
 data$descr_cat_veh <- as.numeric(factor(data$descr_cat_veh))
@@ -156,6 +166,8 @@ data <- data %>% mutate(descr_type_col = case_when(
 ))
 
 
+# =========================================================================== MC
+# Mettre les variables numériques sous format numériques, date sous format date, etc...
 
 # Convert variables into their appropriate types
 data$Num_Acc <- as.numeric(data$Num_Acc)
@@ -170,15 +182,24 @@ data$an_nais <- as.numeric(data$an_nais)
 data$age <- as.numeric(data$age)
 data$place <- as.numeric(data$place)
 
+# =========================================================================== MF
+# Séries chronologiques sur l’évolution du nombre d’accidents par mois 
+
 # Time series on the evolution of the number of accidents per month
 accidentsPerMonth <- table(format(data$date, "%Y-%m"))
 plot(accidentsPerMonth, type = "l")
 acf(accidentsPerMonth)
 
+# =========================================================================== MF
+# Séries chronologiques sur l’évolution du nombre d’accidents par semaine
+
 # Time series on the evolution of the number of accidents per week
 accidentsPerWeek <- table(format(data$date, "%Y-%U"))
 plot(accidentsPerWeek, type = "l")
 acf(accidentsPerWeek)
+
+# =========================================================================== MF
+# Jeu de données avec le nombre d’accidents selon la gravité pour 100.000 habitants par région
 
 # Read Excel file
 popData <- read_excel("base-cc-evol-struct-pop-2009.xls", range = "A6:E36686")

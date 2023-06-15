@@ -1,7 +1,9 @@
+# Ce fichier représente la partie 2 (Visualisation) du projet Big Data
+
 # Load data preparation script
 source("Prepa_Data.R")
 
-# ==============================================================================
+# =========================================================================== MC
 # Représentation graphique du nombre d’accidents en fonction des conditions atmosphériques
 
 
@@ -26,16 +28,16 @@ weatherHistogram <- weatherHistogram %>%
   ))
 
 # Plot the histogram
-barplot(weatherHistogram$accidentCount,
-        names.arg = weatherHistogram$descr_athmo,
-        main = "Number of accidents by weather conditions",
-        col = "lightblue",
-        border = "black",
-        las = 2)
+plot <- ggplot(data = weatherHistogram, aes(x = descr_athmo, y = accidentCount)) +
+  geom_histogram(stat = "identity", color = "red", fill = "red") +
+  geom_text(aes(label = accidentCount), vjust = - 0.3, size = 3.5) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(vjust = 0.5, angle = 45)) +
+  labs(x = "conditions atmosphériques", y = "nombre d'accident", subtitle = "Histogramme du nombre d’accidents en fonction des conditions atmosphériques")
+plot
 
-
-# ==============================================================================
-# Représentation graphique du nombre d’accidents enfonction de la description de la surface
+# =========================================================================== MC
+# Représentation graphique du nombre d’accidents en fonction de la description de la surface
 
 
 # Create histogram of accidents by road surface conditions
@@ -59,15 +61,16 @@ surfaceHistogram <- surfaceHistogram %>%
   ))
 
 # Plot the histogram
-barplot(surfaceHistogram$accidentCount,
-        names.arg = surfaceHistogram$descr_etat_surf,
-        main = "Number of accidents by road surface conditions",
-        col = "lightblue",
-        border = "black",
-        las = 2)
+plot <- ggplot(data = surfaceHistogram, aes(x = descr_etat_surf, y = accidentCount)) +
+  geom_histogram(stat = "identity", color = "red", fill = "red") +
+  geom_text(aes(label = accidentCount), vjust = - 0.3, size = 3.5) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(vjust = 0.5, angle = 45)) +
+  labs(x = "description de la surface", y = "nombre d'accident", subtitle = "Histogramme du nombre d’accidents en fonction de la surface")
+plot
 
 
-# ==============================================================================
+# =========================================================================== MC
 # Représentation graphique du nombre d’accidents selon la gravité
 
 
@@ -93,8 +96,16 @@ barplot(severityHistogram$accidentCount,
         border = "black",
         las = 0.5)
 
+plot <- ggplot(data = severityHistogram, aes(x = descr_grav, y = accidentCount)) +
+  geom_histogram(stat = "identity", color = "red", fill = "red") +
+  geom_text(aes(label = accidentCount), vjust = - 0.3, size = 3.5) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(vjust = 0.5, angle = 45)) +
+  labs(x = "gravité", y = "nombre d'accident", subtitle = "Histogramme du nombre d’accidents selon la gravité")
+plot
 
-# ==============================================================================
+
+# =========================================================================== MC
 # Représentation graphique du nombre d’accidents par tranches d’heure
 
 
@@ -103,13 +114,13 @@ accidentsByHour <- table(format(data$date, "%H"))
 
 # Convert the table to a dataframe
 accidentsByHour <- as.data.frame(accidentsByHour)
-names(accidentsByHour) <- c("Hour", "accidentCount")
+names(accidentsByHour) <- c("hour", "accidentCount")
 
 # Plot the line graph of accidents by hour
 plot(accidentsByHour$accidentCount, type = "l",
-     xlab = "Hour",
-     ylab = "Number of accidents",
-     main = "Number of accidents by hour",
+     xlab = "nombre d’accidents par heures",
+     ylab = "nombre d’accidents",
+     main = "Nombre d’accidents par tranches d’heure",
      xlim = c(0, 23),
      col = "blue", xaxt = "n")
 
@@ -117,29 +128,29 @@ plot(accidentsByHour$accidentCount, type = "l",
 axis(1, at = 0:23, labels = paste0(0:23, "h"))
 
 
-# ==============================================================================
+# =========================================================================== MC
 # Représentation graphique du nombre d’accidents par ville
 
 
 # Calculate the number of accidents by city
-accidentsByCity <- table(data$ville)
-
-# Sort cities by the number of accidents in descending order
-sortedCities <- sort(accidentsByCity, decreasing = TRUE)
-
-# Select the top 20 cities with the highest number of accidents
-top20Cities <- sortedCities[1:20]
+accidentsByCity <- data %>%
+  group_by(ville) %>%
+  summarise(accidentCount = n()) %>%
+  arrange(desc(accidentCount)) %>% 
+  slice_head(n = 20)
 
 # Plot the histogram of accidents for the top 20 cities
-barplot(top20Cities, horiz = FALSE,
-        ylab = "Number of accidents",
-        main = "Number of accidents for the top 20 most affected cities",
-        col = "lightblue",
-        border = "black",
-        las = 2)
+plot <- ggplot(data = accidentsByCity, aes(x = ville, y = accidentCount)) +
+  geom_histogram(stat = "identity", color = "red", fill = "red") +
+  geom_text(aes(label = accidentCount), vjust = - 0.3, size = 3.5) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(vjust = 0.5, angle = 45)) +
+  labs(x = "ville", y = "nombre d'accident", subtitle = "Histogramme du nombre d’accidents par ville")
+plot
 
 
-# ==============================================================================
+
+# =========================================================================== MC
 # Représentation graphique de la quantité d’accidents en fonction des tranches d’âges
 
 
@@ -159,16 +170,16 @@ ageHistogram <- ageHistogram %>%
   summarise(accidentCount = n())
 
 # Plot the histogram
-barplot(ageHistogram$accidentCount,
-        names.arg = ageHistogram$ageGroup,
-        main = "Number of accidents by age group",
-        col = "lightblue",
-        border = "black",
-        las = 2)
+plot <- ggplot(data = ageHistogram, aes(x = ageGroup, y = accidentCount)) +
+  geom_histogram(stat = "identity", color = "red", fill = "red") +
+  geom_text(aes(label = accidentCount), vjust = - 0.3, size = 3.5) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(vjust = 0.5, angle = 45)) +
+  labs(x = "tranche d'âge", y = "nombre d'accident", subtitle = "Histogramme du nombre d’accidents en fonction des tranches d’âges")
+plot
 
-# ==============================================================================
+# =========================================================================== MF
 # Représentation graphique de la moyenne mensuelle des accidents
-
 
 # Create a new column 'month' to extract the month from the 'date' column
 data$month <- format(data$date, "%Y-%m")
@@ -186,8 +197,15 @@ barplot(monthlyAverage$averageAccidents,
         border = "black",
         las = 2)
 
+plot <- ggplot(data = monthlyAverage, aes(x = month, y = averageAccidents)) +
+  geom_histogram(stat = "identity", color = "red", fill = "red") +
+  geom_text(aes(label = averageAccidents), vjust = - 0.3, size = 3.5) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(vjust = 0.5, angle = 45)) +
+  labs(x = "mois", y = "nombre moyen d'accident", subtitle = "Histogramme de la moyenne mensuelle des accidents")
+plot
 
-# ==============================================================================
+# =========================================================================== MF
 # Représentation sous formes de carte de la quantité d’accidents enregistrés par région
 
 
@@ -218,7 +236,7 @@ regionsJoined <- inner_join(regions, accidentsByRegion, by = c("code" = "newCode
 mapview(regionsJoined)
 
 
-# ==============================================================================
+# =========================================================================== MF
 # Représentation sous formes de carte de la quantité d’accidents enregistrés par départements
 
 
@@ -246,7 +264,7 @@ mapview(departmentsJoined)
 
 
 
-# ==============================================================================
+# =========================================================================== MF
 # Représentation sous formes de carte du taux d’accidents graves enregistrés par région
 
 
@@ -278,7 +296,7 @@ mapview(regionsJoined)
 
 
 
-# ==============================================================================
+# =========================================================================== MF
 # Représentation sous formes de carte du taux d’accidents graves enregistrés par départements
 
 

@@ -1,29 +1,38 @@
+# Ce fichier représente la partie 3 (Analyse) du projet Big Data
+
+# Load data preparation script
 source("Prepa_Data.R")
 
-# Affichage du tableau croisé de la descr_athmo en fonction de la descr_grav
-tableau <- xtabs(~ descr_athmo + descr_grav, data)
-print(tableau)
+# =========================================================================== MC
+# Tableaux croisées et des tests d’indépendance du chi2 sur les tableaux entre les différentes variables
 
-#Affichage du tableau croisé de la descr_lum en fonction de la descr_etat_surf
-tableau_2 <- xtabs(~ descr_lum + descr_etat_surf, data)
-print(tableau_2)
+# Displaying the cross-tabulation of descr_athmo based on descr_grav
+table1 <- xtabs(~ descr_athmo + descr_grav, data)
+print(table1)
 
-#Affichage du tableau croisé de la descr_agglo en fonction de la descr_type_col
-tableau_3 <- xtabs(~ descr_agglo+ descr_type_col, data)
-print(tableau_3)
+# Displaying the cross-tabulation of descr_lum based on descr_etat_surf
+table2 <- xtabs(~ descr_lum + descr_etat_surf, data)
+print(table2)
 
-#Affichage des tests d'indépendances du chi2
-chisq.test(tableau)
-chisq.test(tableau_2)
-chisq.test(tableau_3)
+# Displaying the cross-tabulation of descr_agglo based on descr_type_col
+table3 <- xtabs(~ descr_agglo+ descr_type_col, data)
+print(table3)
+
+# Displaying chi-square independence tests
+chisq.test(table1)
+chisq.test(table2)
+chisq.test(table3)
+
+# =========================================================================== MC
+# Représentation graphiqueme des tableaux (mosaicplot)
 
 #Affichage des mosaicplot
-mosaicplot(tableau, main = "descr_atmo en fonction de la descr_grav")
-mosaicplot(tableau_2, main = "descr_lum en fonction de la descr_etat_surf")
-mosaicplot(tableau_3, main = "desc_agglo en fonction de la desc_type_col")
+mosaicplot(table1, main = "descr_atmo en fonction de la descr_grav")
+mosaicplot(table2, main = "descr_lum en fonction de la descr_etat_surf")
+mosaicplot(table3, main = "desc_agglo en fonction de la desc_type_col")
 
 
-# ==============================================================================
+# =========================================================================== MB
 # Régression linéaire du nombre d'accident par mois
 
 # Number of accidents per month
@@ -32,23 +41,23 @@ accidentsPerMonth <- data %>%
   summarise(accidentCount = n())
 
 
-# Réalisation de la regression linéaire
+# Performing linear regression
 regressionMonth <- lm(accidentCount ~ month, data = accidentsPerMonth)
 
-# Affichage des résultats de la régression linéaire
+# Displaying linear regression results
 summary(regressionMonth)
 
 
-# Tracer le graphique de la régression linéaire pour les accidents par mois
+# Plotting the linear regression graph for accidents per month
 plot(accidentCount ~ month, data = accidentsPerMonth, 
      xlab = "Mois", ylab = "Nombre d'accidents",
      main = "Régression linéaire - Accidents par mois")
 
-# Ajouter la ligne de régression
+# Adding the regression line
 abline(regressionMonth, col = "red")
 
 
-# ==============================================================================
+# ============================================================================ MB
 # Régression linéaire du nombre d'accident par semaine
 
 
@@ -58,10 +67,10 @@ accidentsPerWeek <- data %>%
   summarise(accidentCount = n())
 
 
-# Réalisation de la régression linéaire
+# Performing linear regression
 regressionWeek <- lm(accidentCount ~ week, data = accidentsPerWeek)
 
-# Affichage des résultats de la régression linéaire
+# Displaying linear regression results
 summary(regressionWeek)
 
 # Tracer le graphique de la régression linéaire pour les accidents par semaine
@@ -69,7 +78,7 @@ plot(accidentCount ~ week, data = accidentsPerWeek,
      xlab = "Semaine", ylab = "Nombre d'accidents",
      main = "Régression linéaire - Accidents par semaine")
 
-# Ajouter la ligne de régression
+# Adding the regression line
 abline(regressionWeek, col = "red")
 
  
