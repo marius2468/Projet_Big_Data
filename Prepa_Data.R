@@ -17,6 +17,7 @@ library(mapview)
 library(tibble)
 library(foreign)
 library(tidyverse)
+library(tsibble)
 
 # Read data
 data <- read.csv("stat_acc_V3.csv", sep = ";")

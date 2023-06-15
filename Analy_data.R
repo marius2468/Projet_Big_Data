@@ -1,5 +1,6 @@
-library("foreign")
-library("tidyverse")
+
+source("Prepa_Data.R")
+
 
 
 # Affichage du tableau croisé de la descr_atmo en fonction de la descr_grav
@@ -24,34 +25,53 @@ mosaicplot(tableau, color = "blue", main = "descr_cat_veh en fonction de la desc
 mosaicplot(tableau_2, color ="green", main = "descr_cat_veh en fonction de la descr_etat_surf")
 mosaicplot(tableau_3, color ="purple", main = "desc_agglo en fonction de la desc_type_col")
 
-# Construit le tableau des mois en fonction du nombre d'accidents 
-accidents_par_mois <- as.data.frame(accidents_par_mois_counts)
-print(accidents_par_mois)
-# Désignation des colonnes par leur signification
-colnames(accidents_par_mois) <- c("Mois", "Nombre_accidents")
+# ==============================================================================
+# Régression linéaire du nombre d'accident par mois
 
-# Création de la variable mois
-accidents_par_mois$Mois <- as.yearmon(accidents_par_mois$Mois, "%Y-%m")
-print(accidents_par_mois$Mois)
+# Number of accidents per month
+accidentsPerMonth <- data %>%
+  group_by(month = floor_date(date, 'month')) %>%
+  summarise(accidentCount = n())
+
 
 # Réalisation de la regression linéaire
-regression_mois <- lm(Nombre_accidents ~ Mois, data = accidents_par_mois)
+regressionMonth <- lm(accidentCount ~ month, data = accidentsPerMonth)
+
+# Affichage des résultats de la régression linéaire
+summary(regressionMonth)
 
 
-# Construit le tableau des semaines en fonction du nombre d'accidents 
-accidents_par_semaine <- as.data.frame(accidents_par_semaine_counts)
-print(accidents_par_semaine)
-# Désignation des colonnes par leur signification
-colnames(accidents_par_semaine) <- c("Semaine", "Nombre_accidents")
+# Tracer le graphique de la régression linéaire pour les accidents par mois
+plot(accidentCount ~ month, data = accidentsPerMonth, 
+     xlab = "Mois", ylab = "Nombre d'accidents",
+     main = "Régression linéaire - Accidents par mois")
+
+# Ajouter la ligne de régression
+abline(regressionMonth, col = "red")
+
+
+# ==============================================================================
+# Régression linéaire du nombre d'accident par semaine
+
+
+# Number of accidents per week
+accidentsPerWeek <- data %>%
+  group_by(week = floor_date(date, 'week')) %>%
+  summarise(accidentCount = n())
+
 
 # Réalisation de la régression linéaire
-regression_semaine <- lm(Nombre_accidents ~ Semaine, data = accidents_par_semaine)
+regressionWeek <- lm(accidentCount ~ week, data = accidentsPerWeek)
 
 # Affichage des résultats de la régression linéaire
-summary(regression_mois)
+summary(regressionWeek)
 
-# Affichage des résultats de la régression linéaire
-summary(regression_semaine)
+# Tracer le graphique de la régression linéaire pour les accidents par semaine
+plot(accidentCount ~ week, data = accidentsPerWeek, 
+     xlab = "Semaine", ylab = "Nombre d'accidents",
+     main = "Régression linéaire - Accidents par semaine")
 
+# Ajouter la ligne de régression
+abline(regressionWeek, col = "red")
 
  
