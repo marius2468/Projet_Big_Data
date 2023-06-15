@@ -21,7 +21,6 @@ library(tidyverse)
 # Read data
 data <- read.csv("stat_acc_V3.csv", sep = ";")
 
-
 # Remove NA values
 data <- na.omit(data) 
 

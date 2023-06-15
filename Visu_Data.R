@@ -13,16 +13,16 @@ weatherHistogram <- data %>%
 # Rename weather condition categories
 weatherHistogram <- weatherHistogram %>%
   mutate(descr_athmo = case_when(
-    descr_athmo == "Non renseigné" ~ -1,
-    descr_athmo == "Autre" ~ 1,
-    descr_athmo == "Brouillard – fumée" ~ 2,
-    descr_athmo == "Neige – grêle" ~ 3,
-    descr_athmo == "Normale" ~ 4,
-    descr_athmo == "Pluie forte" ~ 5,
-    descr_athmo == "Pluie légère" ~ 6,
-    descr_athmo == "Temps éblouissant" ~ 7,
-    descr_athmo == "Temps couvert" ~ 8,
-    descr_athmo == "Vent fort – tempête" ~ 9
+    descr_athmo == -1 ~ "Non renseigné",
+    descr_athmo == 1 ~ "Autre",
+    descr_athmo == 2 ~ "Brouillard – fumée",
+    descr_athmo == 3 ~ "Neige – grêle",
+    descr_athmo == 4 ~ "Normale",
+    descr_athmo == 5 ~ "Pluie forte",
+    descr_athmo == 6 ~ "Pluie légère",
+    descr_athmo == 7 ~ "Temps éblouissant",
+    descr_athmo == 8 ~ "Temps couvert",
+    descr_athmo == 9 ~ "Vent fort – tempête"
   ))
 
 # Plot the histogram
@@ -46,16 +46,16 @@ surfaceHistogram <- data %>%
 # Rename road surface condition categories
 surfaceHistogram <- surfaceHistogram %>%
   mutate(descr_etat_surf = case_when(
-    descr_etat_surf == "Non renseigné" ~ -1,
-    descr_etat_surf == "Autre" ~ 1,
-    descr_etat_surf == "Boue" ~ 2,
-    descr_etat_surf == "Corps gras – huile" ~ 3,
-    descr_etat_surf == "Enneigée" ~ 4,
-    descr_etat_surf == "Flaques" ~ 5,
-    descr_etat_surf == "Inondée" ~ 6,
-    descr_etat_surf == "Mouillée" ~ 7,
-    descr_etat_surf == "Normale" ~ 8,
-    descr_etat_surf == "Verglacée" ~ 9
+    descr_etat_surf == -1 ~ "Non renseigné",
+    descr_etat_surf == 1 ~ "Autre",
+    descr_etat_surf == 2 ~ "Boue",
+    descr_etat_surf == 3 ~ "Corps gras – huile",
+    descr_etat_surf == 4 ~ "Enneigée",
+    descr_etat_surf == 5 ~ "Flaques",
+    descr_etat_surf == 6 ~ "Inondée",
+    descr_etat_surf == 7 ~ "Mouillée",
+    descr_etat_surf == 8 ~ "Normale",
+    descr_etat_surf == 9 ~ "Verglacée"
   ))
 
 # Plot the histogram
@@ -79,10 +79,10 @@ severityHistogram <- data %>%
 # Rename severity categories
 severityHistogram <- severityHistogram %>% 
   mutate(descr_grav = case_when(
-    descr_grav == "Indemne" ~ 1,
-    descr_grav == "Blessé léger" ~ 2,
-    descr_grav == "Blessé hospitalisé" ~ 3,
-    descr_grav == "Tué" ~ 4
+    descr_grav == 1 ~ "Indemne",
+    descr_grav == 2 ~ "Blessé léger",
+    descr_grav == 3 ~ "Blessé hospitalisé",
+    descr_grav == 4 ~ "Tué"
   ))
 
 # Plot the histogram
@@ -91,7 +91,7 @@ barplot(severityHistogram$accidentCount,
         main = "Number of accidents by severity",
         col = "lightblue",
         border = "black",
-        las = 2)
+        las = 0.5)
 
 
 # ==============================================================================
@@ -303,5 +303,3 @@ departmentsJoined <- inner_join(departments, severeAccidentsByDepartment, by = c
 
 # Display the map
 mapview(departmentsJoined)
-
-write.csv(data, file = "export.csv", row.names = FALSE)
