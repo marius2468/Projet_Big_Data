@@ -1,19 +1,15 @@
-# Load data preparation script
 source("Prepa_Data.R")
 
-# ==============================================================================
-# Partie Analyse
-
-# Affichage du tableau croisé de la descr_atmo en fonction de la descr_grav
-tableau <- table(data$descr_athmo, data$descr_grav)
+# Affichage du tableau croisé de la descr_athmo en fonction de la descr_grav
+tableau <- xtabs(~ descr_athmo + descr_grav, data)
 print(tableau)
 
-#Affichage du tableau croisé de la descr_cat_veh en fonction de la descr_etat_surf
-tableau_2 <- table(data$descr_cat_veh, data$descr_etat_surf)
+#Affichage du tableau croisé de la descr_lum en fonction de la descr_etat_surf
+tableau_2 <- xtabs(~ descr_lum + descr_etat_surf, data)
 print(tableau_2)
 
-#Affichage du tableau croisé de la desc_agglo en fonction de la desc_type_col
-tableau_3 <-table(data$descr_agglo, data$descr_type_col)
+#Affichage du tableau croisé de la descr_agglo en fonction de la descr_type_col
+tableau_3 <- xtabs(~ descr_agglo+ descr_type_col, data)
 print(tableau_3)
 
 #Affichage des tests d'indépendances du chi2
@@ -22,35 +18,58 @@ chisq.test(tableau_2)
 chisq.test(tableau_3)
 
 #Affichage des mosaicplot
-mosaicplot(tableau)
-mosaicplot(tableau_2)
-mosaicplot(tableau_3)
+mosaicplot(tableau, main = "descr_atmo en fonction de la descr_grav")
+mosaicplot(tableau_2, main = "descr_lum en fonction de la descr_etat_surf")
+mosaicplot(tableau_3, main = "desc_agglo en fonction de la desc_type_col")
 
-# Construit le tableau des mois en fonction du nombre d'accidents
-accidents_par_mois <- as.data.frame(accidents_par_mois_counts)
-print(accidents_par_mois)
-# Désignation des colonnes par leur signification
-colnames(accidents_par_mois) <- c("Mois", "Nombre_accidents")
 
-# Création de la variable mois
-accidents_par_mois$Mois <- as.yearmon(accidents_par_mois$Mois, "%Y-%m")
-print(accidents_par_mois$Mois)
+# ==============================================================================
+# Régression linéaire du nombre d'accident par mois
+
+# Number of accidents per month
+accidentsPerMonth <- data %>%
+  group_by(month = floor_date(date, 'month')) %>%
+  summarise(accidentCount = n())
+
 
 # Réalisation de la regression linéaire
-regression_mois <- lm(Nombre_accidents ~ Mois, data = accidents_par_mois)
+regressionMonth <- lm(accidentCount ~ month, data = accidentsPerMonth)
+
+# Affichage des résultats de la régression linéaire
+summary(regressionMonth)
 
 
-# Construit le tableau des semaines en fonction du nombre d'accidents
-accidents_par_semaine <- as.data.frame(accidents_par_semaine_counts)
-print(accidents_par_semaine)
-# Désignation des colonnes par leur signification
-colnames(accidents_par_semaine) <- c("Semaine", "Nombre_accidents")
+# Tracer le graphique de la régression linéaire pour les accidents par mois
+plot(accidentCount ~ month, data = accidentsPerMonth, 
+     xlab = "Mois", ylab = "Nombre d'accidents",
+     main = "Régression linéaire - Accidents par mois")
+
+# Ajouter la ligne de régression
+abline(regressionMonth, col = "red")
+
+
+# ==============================================================================
+# Régression linéaire du nombre d'accident par semaine
+
+
+# Number of accidents per week
+accidentsPerWeek <- data %>%
+  group_by(week = floor_date(date, 'week')) %>%
+  summarise(accidentCount = n())
+
 
 # Réalisation de la régression linéaire
-regression_semaine <- lm(Nombre_accidents ~ Semaine, data = accidents_par_semaine)
+regressionWeek <- lm(accidentCount ~ week, data = accidentsPerWeek)
 
 # Affichage des résultats de la régression linéaire
-summary(regression_mois)
+summary(regressionWeek)
 
-# Affichage des résultats de la régression linéaire
-summary(regression_semaine)
+# Tracer le graphique de la régression linéaire pour les accidents par semaine
+plot(accidentCount ~ week, data = accidentsPerWeek, 
+     xlab = "Semaine", ylab = "Nombre d'accidents",
+     main = "Régression linéaire - Accidents par semaine")
+
+# Ajouter la ligne de régression
+abline(regressionWeek, col = "red")
+
+ 
