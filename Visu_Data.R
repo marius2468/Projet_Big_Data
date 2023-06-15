@@ -89,13 +89,6 @@ severityHistogram <- severityHistogram %>%
   ))
 
 # Plot the histogram
-barplot(severityHistogram$accidentCount,
-        names.arg = severityHistogram$descr_grav,
-        main = "Number of accidents by severity",
-        col = "lightblue",
-        border = "black",
-        las = 0.5)
-
 plot <- ggplot(data = severityHistogram, aes(x = descr_grav, y = accidentCount)) +
   geom_histogram(stat = "identity", color = "red", fill = "red") +
   geom_text(aes(label = accidentCount), vjust = - 0.3, size = 3.5) +
@@ -190,13 +183,6 @@ monthlyAverage <- data %>%
   summarise(averageAccidents = mean(n()))
 
 # Plot the bar graph of monthly average accidents
-barplot(monthlyAverage$averageAccidents,
-        names.arg = monthlyAverage$month,
-        main = "Monthly average accidents",
-        col = "lightblue",
-        border = "black",
-        las = 2)
-
 plot <- ggplot(data = monthlyAverage, aes(x = month, y = averageAccidents)) +
   geom_histogram(stat = "identity", color = "red", fill = "red") +
   geom_text(aes(label = averageAccidents), vjust = - 0.3, size = 3.5) +
